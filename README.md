@@ -42,6 +42,10 @@ Below are some common arguments. See `lt --help` for additional arguments
 
 - `--subdomain` request a named subdomain on the localtunnel server (default is random characters)
 - `--local-host` proxy to a hostname other than localhost
+- `--insecurehost` force the client to accept an insecure connection
+- `--authuser` user this username to authenticate against the server
+- `--authpass` user this password to authenticate against the server
+
 
 You may also specify arguments via env variables. E.x.
 
