@@ -1,13 +1,14 @@
 {
   "name": "localtunnel",
-  "description": "Expose localhost to the world",
+  "description": "Expose localhost to the world - based on https://github.com/localtunnel/localtunnel",
   "version": "2.0.5(MSS)",
+  "homepage" : "https://github.com/LazeMSS/localtunnel/",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git://github.com/localtunnel/localtunnel.git"
+    "url": "git@github.com:LazeMSS/localtunnel.git"
   },
-  "author": "Roman Shtylman <shtylman@gmail.com>",
+  "author": "Mikkel Skovgaard <lazedk@gmail.com",
   "contributors": [
     "Roman Shtylman <shtylman@gmail.com>",
     "Gert Hengeveld <gert@hichroma.com>",
@@ -16,9 +17,6 @@
   "main": "./localtunnel.js",
   "bin": {
     "lt": "./bin/lt.js"
-  },
-  "scripts": {
-    "test": "mocha --ui qunit --reporter list --timeout 60000 -- *.spec.js"
   },
   "dependencies": {
     "axios": "^0.25.0",
