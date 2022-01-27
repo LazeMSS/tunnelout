@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-/* eslint-disable no-console */
-
 const {
 	Command,
 	Option
@@ -92,6 +90,11 @@ if (!/^(?:[a-z0-9][a-z0-9\-]{4,63}[a-z0-9]|[a-z0-9]{3,63})$/.test(options.subdom
 	program.help();
 }
 
+process.on('SIGINT', function() {
+	outputThis('\x1b[2J\x1b[0;0HInterrupted (SIGINT)');
+	process.exit();
+});
+
 (async () => {
 	lastRequests = [];
 	const tunnel = await localtunnel({
@@ -146,16 +149,16 @@ if (!/^(?:[a-z0-9][a-z0-9\-]{4,63}[a-z0-9]|[a-z0-9]{3,63})$/.test(options.subdom
 		}
 
 		tunnel.on('tunnelopen', count => {
-			outputThis('\033[6;0H' + formatLabel('Tunnels open') + '%s', count);
+			outputThis('\x1B[6;0H' + formatLabel('Tunnels open') + '%s', count);
 		});
 		tunnel.on('tunneldead', count => {
-			outputThis('\033[6;0H' + formatLabel('Tunnels open') + '%s', count);
+			outputThis('\x1B[6;0H' + formatLabel('Tunnels open') + '%s', count);
 		});
 	}
 
 	// Should we show the requests
 	if (options.printRequests) {
-		outputThis('\033[8;0H Last 20 requests...');
+		outputThis('\x1B[8;0H Last 20 requests...');
 		tunnel.on('request', info => {
 			var timestr = new Date().toString();
 			timestr = timestr.substr(0, timestr.indexOf('(')).trim();
@@ -164,9 +167,9 @@ if (!/^(?:[a-z0-9][a-z0-9\-]{4,63}[a-z0-9]|[a-z0-9]{3,63})$/.test(options.subdom
 			lastRequests = lastRequests.slice(0, 20);
 
 			// Reset position
-			outputThis('\033[8;0H');
+			outputThis('\x1B[8;0H');
 			lastRequests.forEach(element =>
-				outputThis("  " + element + '\033[K')
+				outputThis("  " + element + '\x1B[K')
 			)
 		});
 	}
