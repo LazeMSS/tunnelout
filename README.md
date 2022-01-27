@@ -37,21 +37,29 @@ Thats it! It will connect to the tunnel server, setup the tunnel, and tell you w
 You can restart your local server all you want, `lt` is smart enough to detect this and reconnect once it is back.
 
 ### Arguments
-
-Below are some common arguments. See `lt --help` for additional arguments
-
-- `--subdomain` request a named subdomain on the localtunnel server (default is random characters)
-- `--local-host` proxy to a hostname other than localhost
-- `--insecurehost` force the client to accept an insecure connection
-- `--authuser` user this username to authenticate against the server
-- `--authpass` user this password to authenticate against the server
-
-
-You may also specify arguments via env variables. E.x.
-
 ```
-PORT=3000 lt
+  -d, --debug                 output extra debugging (default: false)
+  -p, --port <number>         port number (default: 80, env: PORT)
+  -h, --host <upstreamhost>   Upstream server providing forwarding (env: HOST)
+  -r, --retries <number>      Maxium number of retries before quitting connections, 0 means no limit (default: 0, env: RETRIES)
+  -i, --insecurehost          Use insecure tunnel to connect to the server (default: false, env: INSECUREHOST)
+  -k, --userkey <userkey>     Send then string as user key header to upstream server (env: USERKEY)
+  -s, --subdomain <domain>    Send then string as the requested subdomain on the upstram server (env: SUBDOMAIN)
+  -l, --local-host <host>     Tunnel traffic to this host instead of localhost, override Host header to this host (default: "localhost", env: LOCALHOST)
+  -q, --quiet                 quiet mode - minimal output to the shell (default: false, env: QUIET)
+  -pr, --print-requests       Print basic request info (default: false, env: PRINTREQUESTS)
+  -au, --authuser <username>  Username for basic auth when connecting to the tunnel (env: AUTHUSER)
+  -ap, --authpass <password>  Password for basic auth (env: AUTHPASS)
+  -lh, --local-https          Should we use SSL/HTTPS to connect to the local host (default: false, env: LOCALHTTPS)
+  -pp, --local-cert <path>    Path to certificate PEM file for local HTTPS server (env: LOCALCERT)
+  -pk, --local-key <path>     Path to certificate key file for local HTTPS server (env: LOCALKEY)
+  -pc, --local-ca <path>      Path to certificate authority file for self-signed certificates (env: LOCALCA)
+  -aic, --allow-invalid-cert  Disable certificate checks for your local HTTPS server (ignore loca-cert/-key/-ca options) (default: false, env: ALLOWINVALIDCERT)
+  -V, --version               output the version number
+  --help                      display help for command
 ```
+
+You may also specify arguments via env variables. - show in the help as (env: XXX)
 
 ## API
 
