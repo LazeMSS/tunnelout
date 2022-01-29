@@ -10,5 +10,5 @@ module.exports = function localtunnel(arg1, arg2, arg3) {
     }
     return new Promise((resolve, reject) =>
         client.open(err => (err ? reject(err) : resolve(client)))
-        );
+    );
 };
