@@ -10,8 +10,10 @@
         "sourceType": "module"
     },
     "rules": {
-	"no-console": "warn",
-	"quotes" : ["error", "single",{ "avoidEscape": true }]
+        "no-console": "warn",
+        "quotes": ["error", "single", { "avoidEscape": true }],
+        "arrow-body-style": "off",
+        "prefer-arrow-callback": "off"
     },
-    "noInlineConfig" : true
+    "noInlineConfig": true
 }
