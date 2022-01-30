@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 
+require("localenv");
+
 const {
     Command,
     Option
 } = require("commander");
+
 
 const localtunnel = require("../localtunnel");
 const {
@@ -28,7 +31,6 @@ function outputThis(...theArgs) {
     }
     console.log.apply(console, theArgs);
 }
-
 
 program
     .usage("--port <number> <options>")

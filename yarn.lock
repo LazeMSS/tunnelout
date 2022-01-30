@@ -14,6 +14,11 @@
   "resolved" "https://registry.npmjs.org/commander/-/commander-9.0.0.tgz"
   "version" "9.0.0"
 
+"commander@2.5.0":
+  "integrity" "sha1-13e2pNhH1CPl1HXahkKUrB/1qp0="
+  "resolved" "https://registry.npmjs.org/commander/-/commander-2.5.0.tgz"
+  "version" "2.5.0"
+
 "debug@4.3.3":
   "integrity" "sha512-/zxw5+vh1Tfv+4Qn7a5nsbcJKPaSvCDhojn6FEl9vupwK2VCSDtEiEtqr8DFtzYFOdz63LBkxec7DYuc2jon6Q=="
   "resolved" "https://registry.npmjs.org/debug/-/debug-4.3.3.tgz"
@@ -25,6 +30,13 @@
   "integrity" "sha512-+hbxoLbFMbRKDwohX8GkTataGqO6Jb7jGwpAlwgy2bIz25XtRm7KEzJM76R1WiNT5SwZkX4Y75SwBolkpmE7iQ=="
   "resolved" "https://registry.npmjs.org/follow-redirects/-/follow-redirects-1.14.7.tgz"
   "version" "1.14.7"
+
+"localenv@^0.2.2":
+  "integrity" "sha1-xQjynTSFvck0HT6tF/YcWr0bC6s="
+  "resolved" "https://registry.npmjs.org/localenv/-/localenv-0.2.2.tgz"
+  "version" "0.2.2"
+  dependencies:
+    "commander" "2.5.0"
 
 "ms@2.1.2":
   "integrity" "sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w=="
