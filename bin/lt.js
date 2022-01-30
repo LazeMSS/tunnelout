@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 
+/*
+ todo:
+    change all names from local tunnel aka rename project
+    make env. variables unique/prefix
+ */
+
 require("localenv");
 
 const {
@@ -7,12 +13,12 @@ const {
     Option
 } = require("commander");
 
-
-const localtunnel = require("../localtunnel");
 const {
     version
 } = require("../package");
 const program = new Command();
+
+const localtunnel = require("../localtunnel");
 
 // Quick error output
 function mainConsoleError(str) {
@@ -34,10 +40,10 @@ function outputThis(...theArgs) {
 
 program
     .usage("--port <number> <options>")
-    .option("-d, --debug", "output extra debugging", false)
-    .addOption(new Option("-p, --port <number>", "port number").default(80).env("PORT").makeOptionMandatory())
+    .addOption(new Option("-d, --debug", "output extra debugging").default(false).env("DEBUG"))
+    .addOption(new Option("-p, --port <number>", "local port number to connect to ie. --local-host port").default(80).env("PORT").makeOptionMandatory())
     .addOption(new Option("-h, --host <upstreamhost>", "Upstream server providing forwarding").default("https://example.com").env("HOST").makeOptionMandatory())
-    .addOption(new Option("-r, --retries <number>", "Maxium number of retries before quitting connections, 0 means no limit").default(0).env("RETRIES"))
+    .addOption(new Option("-r, --retries <number>", "Maxium number of retries before quitting connections, 0 means no limit").default(10).env("RETRIES"))
     .addOption(new Option("-i, --insecurehost", "Use insecure tunnel to connect to the server").default(false).env("INSECUREHOST"))
     .addOption(new Option("-k, --userkey <userkey>", "Send then string as user key header to upstream server").env("USERKEY"))
     .addOption(new Option("-s, --subdomain <domain>", "Send then string as the requested subdomain on the upstram server").env("SUBDOMAIN"))
@@ -59,7 +65,7 @@ const options = program.opts();
 // Check for debug mode
 const debugMode = options.debug;
 const quietMode = options.quiet;
-if (debugMode || process.env.DEBUG !== undefined) {
+if (debugMode) {
     console.log("Commandline options:");
     console.log(options);
 }
@@ -93,7 +99,9 @@ if (!/^(?:[a-z0-9][a-z0-9-]{4,63}[a-z0-9]|[a-z0-9]{3,63})$/.test(options.subdoma
 }
 
 process.on("SIGINT", function () {
-    outputThis("\x1b[2J\x1b[0;0HInterrupted (SIGINT)");
+    if (!debugMode && !quietMode){
+        outputThis("\x1b[2J\x1b[0;0HInterrupted (SIGINT)");
+    }
     process.exit();
 });
 
