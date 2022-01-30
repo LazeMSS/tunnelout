@@ -2,7 +2,7 @@
   "name": "localtunnel",
   "description": "Expose localhost to the world - based on https://github.com/localtunnel/localtunnel",
   "version": "2.0.5(MSS)",
-  "homepage" : "https://github.com/LazeMSS/localtunnel/",
+  "homepage": "https://github.com/LazeMSS/localtunnel/",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -20,8 +20,8 @@
   },
   "dependencies": {
     "axios": "^0.25.0",
-    "commander": "^8.3.0",
-    "debug": "4.1.1"
+    "commander": "^9.0.0",
+    "debug": "4.3.3"
   },
   "engines": {
     "node": ">=8.3.0"
