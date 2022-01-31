@@ -8,7 +8,5 @@ module.exports = function tunnelOut(arg1, arg2, arg3) {
         client.open((err) => (err ? callback(err) : callback(null, client)));
         return client;
     }
-    return new Promise((resolve, reject) =>
-        client.open((err) => (err ? reject(err) : resolve(client)))
-    );
+    return new Promise((resolve, reject) => client.open((err) => (err ? reject(err) : resolve(client))));
 };

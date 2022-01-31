@@ -34,117 +34,37 @@ function outputThis(...theArgs) {
 
 program
     .usage('--port <number> <options>')
+    .addOption(new Option('-d, --debug', 'output extra debugging').default(false).env('DEBUG'))
     .addOption(
-        new Option('-d, --debug', 'output extra debugging')
-            .default(false)
-            .env('DEBUG')
+        new Option('-p, --port <number>', 'local port number to connect to ie. --local-host port').default(80).env('PORT').makeOptionMandatory()
     )
     .addOption(
-        new Option(
-            '-p, --port <number>',
-            'local port number to connect to ie. --local-host port'
-        )
-            .default(80)
-            .env('PORT')
-            .makeOptionMandatory()
-    )
-    .addOption(
-        new Option(
-            '-h, --host <upstreamhost>',
-            'Upstream server providing forwarding'
-        )
+        new Option('-h, --host <upstreamhost>', 'Upstream server providing forwarding')
             .default('https://example.com')
             .env('HOST')
             .makeOptionMandatory()
     )
     .addOption(
-        new Option(
-            '-r, --retries <number>',
-            'Maxium number of retries before quitting connections, 0 means no limit'
-        )
-            .default(10)
-            .env('RETRIES')
+        new Option('-r, --retries <number>', 'Maxium number of retries before quitting connections, 0 means no limit').default(10).env('RETRIES')
     )
+    .addOption(new Option('-i, --insecurehost', 'Use insecure tunnel to connect to the server').default(false).env('INSECUREHOST'))
+    .addOption(new Option('-k, --userkey <userkey>', 'Send then string as user key header to upstream server').env('USERKEY'))
+    .addOption(new Option('-s, --subdomain <domain>', 'Send then string as the requested subdomain on the upstram server').env('SUBDOMAIN'))
     .addOption(
-        new Option(
-            '-i, --insecurehost',
-            'Use insecure tunnel to connect to the server'
-        )
-            .default(false)
-            .env('INSECUREHOST')
-    )
-    .addOption(
-        new Option(
-            '-k, --userkey <userkey>',
-            'Send then string as user key header to upstream server'
-        ).env('USERKEY')
-    )
-    .addOption(
-        new Option(
-            '-s, --subdomain <domain>',
-            'Send then string as the requested subdomain on the upstram server'
-        ).env('SUBDOMAIN')
-    )
-    .addOption(
-        new Option(
-            '-l, --local-host <host>',
-            'Tunnel traffic to this host instead of localhost, override Host header to this host'
-        )
+        new Option('-l, --local-host <host>', 'Tunnel traffic to this host instead of localhost, override Host header to this host')
             .default('localhost')
             .env('LOCALHOST')
     )
+    .addOption(new Option('-q, --quiet', 'quiet mode - minimal output to the shell').default(false).env('QUIET'))
+    .addOption(new Option('-pr, --print-requests', 'Print basic request info').default(false).env('PRINTREQUESTS'))
+    .addOption(new Option('-au, --authuser <username>', 'Username for basic auth when connecting to the tunnel').env('AUTHUSER'))
+    .addOption(new Option('-ap, --authpass <password>', 'Password for basic auth').env('AUTHPASS'))
+    .addOption(new Option('-lh, --local-https', 'Should we use SSL/HTTPS to connect to the local host').default(false).env('LOCALHTTPS'))
+    .addOption(new Option('-pp, --local-cert <path>', 'Path to certificate PEM file for local HTTPS server').env('LOCALCERT'))
+    .addOption(new Option('-pk, --local-key <path>', 'Path to certificate key file for local HTTPS server').env('LOCALKEY'))
+    .addOption(new Option('-pc, --local-ca <path>', 'Path to certificate authority file for self-signed certificates').env('LOCALCA'))
     .addOption(
-        new Option('-q, --quiet', 'quiet mode - minimal output to the shell')
-            .default(false)
-            .env('QUIET')
-    )
-    .addOption(
-        new Option('-pr, --print-requests', 'Print basic request info')
-            .default(false)
-            .env('PRINTREQUESTS')
-    )
-    .addOption(
-        new Option(
-            '-au, --authuser <username>',
-            'Username for basic auth when connecting to the tunnel'
-        ).env('AUTHUSER')
-    )
-    .addOption(
-        new Option('-ap, --authpass <password>', 'Password for basic auth').env(
-            'AUTHPASS'
-        )
-    )
-    .addOption(
-        new Option(
-            '-lh, --local-https',
-            'Should we use SSL/HTTPS to connect to the local host'
-        )
-            .default(false)
-            .env('LOCALHTTPS')
-    )
-    .addOption(
-        new Option(
-            '-pp, --local-cert <path>',
-            'Path to certificate PEM file for local HTTPS server'
-        ).env('LOCALCERT')
-    )
-    .addOption(
-        new Option(
-            '-pk, --local-key <path>',
-            'Path to certificate key file for local HTTPS server'
-        ).env('LOCALKEY')
-    )
-    .addOption(
-        new Option(
-            '-pc, --local-ca <path>',
-            'Path to certificate authority file for self-signed certificates'
-        ).env('LOCALCA')
-    )
-    .addOption(
-        new Option(
-            '-aic, --allow-invalid-cert',
-            'Disable certificate checks for your local HTTPS server (ignore loca-cert/-key/-ca options)'
-        )
+        new Option('-aic, --allow-invalid-cert', 'Disable certificate checks for your local HTTPS server (ignore loca-cert/-key/-ca options)')
             .default(false)
             .env('ALLOWINVALIDCERT')
     )
@@ -174,34 +94,20 @@ if (Number.isNaN(options.retries) || options.retries < 0) {
 }
 
 if (
-    (typeof options.authpass !== 'undefined' &&
-        typeof options.authuser === 'undefined') ||
-    (typeof options.authpass === 'undefined' &&
-        typeof options.authuser !== 'undefined')
+    (typeof options.authpass !== 'undefined' && typeof options.authuser === 'undefined') ||
+    (typeof options.authpass === 'undefined' && typeof options.authuser !== 'undefined')
 ) {
-    mainConsoleError(
-        '--authpass and --authuser must both be supplied if you want to use basic auth'
-    );
+    mainConsoleError('--authpass and --authuser must both be supplied if you want to use basic auth');
     program.help();
 }
 
-if (
-    typeof options.authpass !== 'undefined' &&
-    typeof options.authuser !== 'undefined' &&
-    options.authpass === options.authuser
-) {
+if (typeof options.authpass !== 'undefined' && typeof options.authuser !== 'undefined' && options.authpass === options.authuser) {
     mainConsoleError('--authpass and --authuser must be different!');
     program.help();
 }
 // Fix missing or bad subdomanin
-if (
-    !/^(?:[a-z0-9][a-z0-9-]{4,63}[a-z0-9]|[a-z0-9]{3,63})$/.test(
-        options.subdomain
-    )
-) {
-    mainConsoleError(
-        'Invalid argument: "subdomain". Subdomains must be lowercase and between 4 and 63 alphanumeric characters.'
-    );
+if (!/^(?:[a-z0-9][a-z0-9-]{4,63}[a-z0-9]|[a-z0-9]{3,63})$/.test(options.subdomain)) {
+    mainConsoleError('Invalid argument: "subdomain". Subdomains must be lowercase and between 4 and 63 alphanumeric characters.');
     program.help();
 }
 
@@ -240,24 +146,14 @@ process.on('SIGINT', function () {
     });
 
     if (quietMode) {
-        console.log(
-            'tunnelOut running: %s -> %s:%s \x1b[0m',
-            tunnelClient.url,
-            options.localHost,
-            options.port
-        );
+        console.log('tunnelOut running: %s -> %s:%s \x1b[0m', tunnelClient.url, options.localHost, options.port);
     } else {
         // Clear screen
         outputThis('\x1b[2J\x1b[0;0H');
 
         // Set header
         outputThis('\x1b[1m\x1b[32mTunnelOut is now running...\x1b[0m');
-        outputThis(
-            formatLabel('Forwarding') + '%s -> %s:%s \x1b[0m',
-            tunnelClient.url,
-            options.localHost,
-            options.port
-        );
+        outputThis(formatLabel('Forwarding') + '%s -> %s:%s \x1b[0m', tunnelClient.url, options.localHost, options.port);
 
         /**
          * `cachedUrl` is set when using a proxy server that support resource caching.
@@ -265,10 +161,7 @@ process.on('SIGINT', function () {
          * @see https://github.com/localtunnel/localtunnel/pull/319#discussion_r319846289
          */
         if (tunnelClient.cachedUrl) {
-            outputThis(
-                formatLabel('Cached URL') + '%s',
-                tunnelClient.cachedUrl
-            );
+            outputThis(formatLabel('Cached URL') + '%s', tunnelClient.cachedUrl);
         } else {
             outputThis(formatLabel('Cached URL') + 'Not used');
         }
@@ -294,22 +187,12 @@ process.on('SIGINT', function () {
             let timestr = new Date().toString();
             timestr = timestr.substr(0, timestr.indexOf('(')).trim();
             timestr = timestr.substr(0, timestr.lastIndexOf(' '));
-            lastRequests.unshift(
-                info.forward.padEnd(15) +
-                    '[' +
-                    timestr +
-                    '] ' +
-                    info.method +
-                    ' ' +
-                    info.path
-            );
+            lastRequests.unshift(info.forward.padEnd(15) + '[' + timestr + '] ' + info.method + ' ' + info.path);
             lastRequests = lastRequests.slice(0, 20);
 
             // Reset position
             outputThis('\x1B[8;0H');
-            lastRequests.forEach((element) =>
-                outputThis('  ' + element + '\x1B[K')
-            );
+            lastRequests.forEach((element) => outputThis('  ' + element + '\x1B[K'));
         });
     }
 })();
