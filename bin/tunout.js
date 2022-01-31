@@ -9,14 +9,25 @@ const { Command, Option } = require('commander');
 // Get version info for commandline version
 const packageInfo = require('../package');
 const tunnelOutMain = require('../tunnelout');
+const fs = require('fs');
+
+const URL = require('url').URL;
 
 // Main
 const program = new Command();
 
+function stringIsAValidUrl(s) {
+    try {
+        new URL(s);
+        return true;
+    } catch (err) {
+        return false;
+    }
+}
+
 // Quick error output
 function mainConsoleError(str) {
-    console.log('\x1b[1;37m%s\x1b[0m', 'Error handling input:');
-    console.log('\x1b[0;31m%s\x1b[0m\n', str);
+    console.log('\x1b[1;37m%s\x1b[0m', 'Input error:', '\x1b[0;31m' + str + '\x1b[0m\n');
 }
 
 // Formating of labels
@@ -33,14 +44,14 @@ function outputThis(...theArgs) {
 }
 
 program
-    .usage('--port <number> <options>')
+    .usage('--host <tunnelOutHost> --port <number> [options]')
     .addOption(new Option('-d, --debug', 'output extra debugging').default(false).env('DEBUG'))
+    .addOption(new Option('-h, --host <tunnelOutHost>', 'tunnelOut server providing forwarding - remeber http(s)://').env('HOST').makeOptionMandatory())
     .addOption(new Option('-p, --port <number>', 'local port number to connect to ie. --local-host port').default(80).env('PORT').makeOptionMandatory())
-    .addOption(new Option('-h, --host <upstreamhost>', 'Upstream server providing forwarding').default('https://example.com').env('HOST').makeOptionMandatory())
     .addOption(new Option('-r, --retries <number>', 'Maxium number of retries before quitting connections, 0 means no limit').default(10).env('RETRIES'))
-    .addOption(new Option('-i, --insecurehost', 'Use insecure tunnel to connect to the server').default(false).env('INSECUREHOST'))
-    .addOption(new Option('-k, --userkey <userkey>', 'Send then string as user key header to upstream server').env('USERKEY'))
-    .addOption(new Option('-s, --subdomain <domain>', 'Send then string as the requested subdomain on the upstram server').env('SUBDOMAIN'))
+    .addOption(new Option('-i, --insecurehost', 'Use/force insecure tunnel to connect to the tunnelOut server').default(false).env('INSECUREHOST'))
+    .addOption(new Option('-k, --userkey <userkey>', 'Send then string as user key header to tunnelOut server').env('USERKEY'))
+    .addOption(new Option('-s, --subdomain <domain>', 'Send then string as the requested subdomain on the tunnelOut server').env('SUBDOMAIN'))
     .addOption(new Option('-l, --local-host <host>', 'Tunnel traffic to this host instead of localhost, override Host header to this host').default('localhost').env('LOCALHOST'))
     .addOption(new Option('-q, --quiet', 'quiet mode - minimal output to the shell').default(false).env('QUIET'))
     .addOption(new Option('-pr, --print-requests', 'Print basic request info').default(false).env('PRINTREQUESTS'))
@@ -64,31 +75,60 @@ if (debugMode) {
     console.log(options);
 }
 
-// Valid port?
-options.port = parseInt(options.port, 10);
-if (Number.isNaN(options.port)) {
+// check host
+if (!stringIsAValidUrl(options.host)) {
+    if (options.insecurehost) {
+        options.host = 'http://' + options.host;
+    } else {
+        options.host = 'https://' + options.host;
+    }
+    // Poor mans url validation -- i don't care for too many modules
+    if (!stringIsAValidUrl(options.host) || options.host.indexOf('.') == -1) {
+        mainConsoleError('Invalid argument: "host" must be a valid URL');
+        program.help();
+    }
+}
+
+options.port = Number(options.port);
+if (isNaN(options.port)) {
     mainConsoleError('Invalid argument: "port" must be a number');
     program.help();
 }
 
-options.retries = parseInt(options.retries, 10);
-if (Number.isNaN(options.retries) || options.retries < 0) {
+options.retries = Number(options.retries);
+if (isNaN(options.retries) || options.retries < 0) {
     mainConsoleError('Invalid argument: "retries" must be a number');
     program.help();
 }
 
-if ((typeof options.authpass !== 'undefined' && typeof options.authuser === 'undefined') || (typeof options.authpass === 'undefined' && typeof options.authuser !== 'undefined')) {
-    mainConsoleError('--authpass and --authuser must both be supplied if you want to use basic auth');
+// We need both user and pass
+if (typeof options.authpass !== typeof options.authuser && (options.authpass === undefined || options.authuser === undefined)) {
+    mainConsoleError('Both --authpass and --authuser must be supplied if you want to use basic auth');
+    program.help();
+}
+if (typeof options.authpass !== 'undefined' && options.authpass === options.authuser) {
+    mainConsoleError('--authpass and --authuser parameters must be different!');
     program.help();
 }
 
-if (typeof options.authpass !== 'undefined' && typeof options.authuser !== 'undefined' && options.authpass === options.authuser) {
-    mainConsoleError('--authpass and --authuser must be different!');
-    program.help();
-}
 // Fix missing or bad subdomanin
 if (!/^(?:[a-z0-9][a-z0-9-]{4,63}[a-z0-9]|[a-z0-9]{3,63})$/.test(options.subdomain)) {
-    mainConsoleError('Invalid argument: "subdomain". Subdomains must be lowercase and between 4 and 63 alphanumeric characters.');
+    mainConsoleError('Invalid argument: "subdomain". Subdomain must be lowercase and between 4 and 63 alphanumeric characters.');
+    program.help();
+}
+
+if (typeof options.localCert !== typeof options.localKey && (options.localCert === undefined || options.localKey === undefined)) {
+    mainConsoleError('Both --local-cert and --local-key must be supplied if you want to use local encryption');
+    program.help();
+}
+
+if (options.localCert !== undefined && !fs.existsSync(options.localCert)) {
+    mainConsoleError('File not found for --local-cert: "' + options.localCert + '"');
+    program.help();
+}
+
+if (options.localKey !== undefined && !fs.existsSync(options.localKey)) {
+    mainConsoleError('File not found for --local-cert: "' + options.localKey + '"');
     program.help();
 }
 
@@ -137,7 +177,7 @@ process.on('SIGINT', function () {
         outputThis(formatLabel('Forwarding') + '%s -> %s:%s \x1b[0m', tunnelClient.url, options.localHost, options.port);
 
         /**
-         * `cachedUrl` is set when using a proxy server that support resource caching.
+         * cachedUrl is set when using a proxy server that support resource caching.
          * This URL generally remains available after the tunnel itself has closed.
          * @see https://github.com/localtunnel/localtunnel/pull/319#discussion_r319846289
          */
