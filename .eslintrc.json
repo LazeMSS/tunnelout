@@ -13,7 +13,8 @@
         "no-console": "warn",
         "quotes": ["error", "single", { "avoidEscape": true }],
         "arrow-body-style": "off",
-        "prefer-arrow-callback": "off"
+        "prefer-arrow-callback": "off",
+        "comma-dangle": ["error", "never"]
     },
     "noInlineConfig": true
 }

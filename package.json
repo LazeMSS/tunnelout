@@ -1,22 +1,22 @@
 {
-  "name": "localtunnel",
-  "description": "Expose localhost to the world - based on https://github.com/localtunnel/localtunnel",
-  "version": "2.0.5(MSS)",
+  "name": "tunnelout",
+  "description": "Expose a localhost or another host in the local network to the internet - based on https://github.com/localtunnel/localtunnel",
+  "version": "0.5",
   "homepage": "https://github.com/LazeMSS/localtunnel/",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git@github.com:LazeMSS/localtunnel.git"
   },
-  "author": "Mikkel Skovgaard <lazedk@gmail.com",
+  "author": "Mikkel Skovgaard <lazedk@gmail.com>",
   "contributors": [
     "Roman Shtylman <shtylman@gmail.com>",
     "Gert Hengeveld <gert@hichroma.com>",
     "Tom Coleman <tom@hichroma.com>"
   ],
-  "main": "./localtunnel.js",
+  "main": "./tunnelout.js",
   "bin": {
-    "lt": "./bin/lt.js"
+    "to": "./bin/to.js"
   },
   "dependencies": {
     "axios": "^0.25.0",

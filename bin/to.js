@@ -1,19 +1,17 @@
 #!/usr/bin/env node
 
-/*
- todo:
-    change all names from local tunnel aka rename project
-    make env. variables unique/prefix
- */
-
+// load .env.local - to keep private stuff out off github
 require('localenv');
 
+// Handles commandline options
 const { Command, Option } = require('commander');
 
-const { version } = require('../package');
-const program = new Command();
-
+// Get version info for commandline version
+const packageInfo = require('../package');
 const tunnelOutMain = require('../tunnelout');
+
+// Main
+const program = new Command();
 
 // Quick error output
 function mainConsoleError(str) {
@@ -21,6 +19,7 @@ function mainConsoleError(str) {
     console.log('\x1b[0;31m%s\x1b[0m\n', str);
 }
 
+// Formating of labels
 function formatLabel(label) {
     return ' ' + label.padEnd(20);
 }
@@ -149,8 +148,7 @@ program
             .default(false)
             .env('ALLOWINVALIDCERT')
     )
-    .version(version);
-
+    .version(packageInfo.version);
 program.parse(process.argv);
 const options = program.opts();
 
@@ -232,6 +230,7 @@ process.on('SIGINT', function () {
         local_ca: options.localCa,
         allow_invalid_cert: options.allowInvalidCert,
         emitrequests: options.printRequests,
+        client_name: packageInfo.name + "/" + packageInfo.version
     }).catch((err) => {
         throw err;
     });
@@ -243,7 +242,7 @@ process.on('SIGINT', function () {
     if (quietMode) {
         console.log(
             'tunnelOut running: %s -> %s:%s \x1b[0m',
-            tunnel.url,
+            tunnelClient.url,
             options.localHost,
             options.port
         );
