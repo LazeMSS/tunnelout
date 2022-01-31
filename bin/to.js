@@ -13,7 +13,7 @@ const { Command, Option } = require('commander');
 const { version } = require('../package');
 const program = new Command();
 
-const localtunnel = require('../localtunnel');
+const tunnelOutMain = require('../tunnelout');
 
 // Quick error output
 function mainConsoleError(str) {
@@ -216,7 +216,7 @@ process.on('SIGINT', function () {
 
 (async () => {
     let lastRequests = [];
-    const tunnel = await localtunnel({
+    const tunnelClient = await tunnelOutMain({
         port: options.port,
         host: options.host,
         subdomain: options.subdomain,
@@ -236,13 +236,13 @@ process.on('SIGINT', function () {
         throw err;
     });
 
-    tunnel.on('error', (err) => {
+    tunnelClient.on('error', (err) => {
         throw err;
     });
 
     if (quietMode) {
         console.log(
-            'localtunnel running: %s -> %s:%s \x1b[0m',
+            'tunnelOut running: %s -> %s:%s \x1b[0m',
             tunnel.url,
             options.localHost,
             options.port
@@ -252,10 +252,10 @@ process.on('SIGINT', function () {
         outputThis('\x1b[2J\x1b[0;0H');
 
         // Set header
-        outputThis('\x1b[1m\x1b[32mLocaltunnel is now running...\x1b[0m');
+        outputThis('\x1b[1m\x1b[32mTunnelOut is now running...\x1b[0m');
         outputThis(
             formatLabel('Forwarding') + '%s -> %s:%s \x1b[0m',
-            tunnel.url,
+            tunnelClient.url,
             options.localHost,
             options.port
         );
@@ -265,22 +265,22 @@ process.on('SIGINT', function () {
          * This URL generally remains available after the tunnel itself has closed.
          * @see https://github.com/localtunnel/localtunnel/pull/319#discussion_r319846289
          */
-        if (tunnel.cachedUrl) {
-            outputThis(formatLabel('Cached URL') + '%s', tunnel.cachedUrl);
+        if (tunnelClient.cachedUrl) {
+            outputThis(formatLabel('Cached URL') + '%s', tunnelClient.cachedUrl);
         } else {
             outputThis(formatLabel('Cached URL') + 'Not used');
         }
 
-        if (tunnel.dashboard !== false) {
-            outputThis(formatLabel('Dashboard') + '%s', tunnel.dashboard);
+        if (tunnelClient.dashboard !== false) {
+            outputThis(formatLabel('Dashboard') + '%s', tunnelClient.dashboard);
         } else {
             outputThis(formatLabel('Dashboard') + 'Not active');
         }
 
-        tunnel.on('tunnelopen', (count) => {
+        tunnelClient.on('tunnelopen', (count) => {
             outputThis('\x1B[6;0H' + formatLabel('Tunnels open') + '%s', count);
         });
-        tunnel.on('tunneldead', (count) => {
+        tunnelClient.on('tunneldead', (count) => {
             outputThis('\x1B[6;0H' + formatLabel('Tunnels open') + '%s', count);
         });
     }
@@ -288,7 +288,7 @@ process.on('SIGINT', function () {
     // Should we show the requests
     if (options.printRequests) {
         outputThis('\x1B[8;0H Last 20 requests...');
-        tunnel.on('request', (info) => {
+        tunnelClient.on('request', (info) => {
             let timestr = new Date().toString();
             timestr = timestr.substr(0, timestr.indexOf('(')).trim();
             timestr = timestr.substr(0, timestr.lastIndexOf(' '));
