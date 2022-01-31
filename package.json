@@ -16,7 +16,7 @@
   ],
   "main": "./tunnelout.js",
   "bin": {
-    "to": "./bin/to.js"
+    "to": "./bin/tunout.js"
   },
   "dependencies": {
     "axios": "^0.25.0",
