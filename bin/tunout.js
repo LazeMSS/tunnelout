@@ -230,7 +230,7 @@ process.on('SIGINT', function () {
         local_ca: options.localCa,
         allow_invalid_cert: options.allowInvalidCert,
         emitrequests: options.printRequests,
-        client_name: packageInfo.name + "/" + packageInfo.version
+        client_name: packageInfo.name + '/' + packageInfo.version
     }).catch((err) => {
         throw err;
     });
@@ -265,7 +265,10 @@ process.on('SIGINT', function () {
          * @see https://github.com/localtunnel/localtunnel/pull/319#discussion_r319846289
          */
         if (tunnelClient.cachedUrl) {
-            outputThis(formatLabel('Cached URL') + '%s', tunnelClient.cachedUrl);
+            outputThis(
+                formatLabel('Cached URL') + '%s',
+                tunnelClient.cachedUrl
+            );
         } else {
             outputThis(formatLabel('Cached URL') + 'Not used');
         }
