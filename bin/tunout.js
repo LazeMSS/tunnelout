@@ -35,26 +35,13 @@ function outputThis(...theArgs) {
 program
     .usage('--port <number> <options>')
     .addOption(new Option('-d, --debug', 'output extra debugging').default(false).env('DEBUG'))
-    .addOption(
-        new Option('-p, --port <number>', 'local port number to connect to ie. --local-host port').default(80).env('PORT').makeOptionMandatory()
-    )
-    .addOption(
-        new Option('-h, --host <upstreamhost>', 'Upstream server providing forwarding')
-            .default('https://example.com')
-            .env('HOST')
-            .makeOptionMandatory()
-    )
-    .addOption(
-        new Option('-r, --retries <number>', 'Maxium number of retries before quitting connections, 0 means no limit').default(10).env('RETRIES')
-    )
+    .addOption(new Option('-p, --port <number>', 'local port number to connect to ie. --local-host port').default(80).env('PORT').makeOptionMandatory())
+    .addOption(new Option('-h, --host <upstreamhost>', 'Upstream server providing forwarding').default('https://example.com').env('HOST').makeOptionMandatory())
+    .addOption(new Option('-r, --retries <number>', 'Maxium number of retries before quitting connections, 0 means no limit').default(10).env('RETRIES'))
     .addOption(new Option('-i, --insecurehost', 'Use insecure tunnel to connect to the server').default(false).env('INSECUREHOST'))
     .addOption(new Option('-k, --userkey <userkey>', 'Send then string as user key header to upstream server').env('USERKEY'))
     .addOption(new Option('-s, --subdomain <domain>', 'Send then string as the requested subdomain on the upstram server').env('SUBDOMAIN'))
-    .addOption(
-        new Option('-l, --local-host <host>', 'Tunnel traffic to this host instead of localhost, override Host header to this host')
-            .default('localhost')
-            .env('LOCALHOST')
-    )
+    .addOption(new Option('-l, --local-host <host>', 'Tunnel traffic to this host instead of localhost, override Host header to this host').default('localhost').env('LOCALHOST'))
     .addOption(new Option('-q, --quiet', 'quiet mode - minimal output to the shell').default(false).env('QUIET'))
     .addOption(new Option('-pr, --print-requests', 'Print basic request info').default(false).env('PRINTREQUESTS'))
     .addOption(new Option('-au, --authuser <username>', 'Username for basic auth when connecting to the tunnel').env('AUTHUSER'))
@@ -63,12 +50,9 @@ program
     .addOption(new Option('-pp, --local-cert <path>', 'Path to certificate PEM file for local HTTPS server').env('LOCALCERT'))
     .addOption(new Option('-pk, --local-key <path>', 'Path to certificate key file for local HTTPS server').env('LOCALKEY'))
     .addOption(new Option('-pc, --local-ca <path>', 'Path to certificate authority file for self-signed certificates').env('LOCALCA'))
-    .addOption(
-        new Option('-aic, --allow-invalid-cert', 'Disable certificate checks for your local HTTPS server (ignore loca-cert/-key/-ca options)')
-            .default(false)
-            .env('ALLOWINVALIDCERT')
-    )
+    .addOption(new Option('-aic, --allow-invalid-cert', 'Disable certificate checks for your local HTTPS server (ignore loca-cert/-key/-ca options)').default(false).env('ALLOWINVALIDCERT'))
     .version(packageInfo.version);
+
 program.parse(process.argv);
 const options = program.opts();
 
@@ -93,10 +77,7 @@ if (Number.isNaN(options.retries) || options.retries < 0) {
     program.help();
 }
 
-if (
-    (typeof options.authpass !== 'undefined' && typeof options.authuser === 'undefined') ||
-    (typeof options.authpass === 'undefined' && typeof options.authuser !== 'undefined')
-) {
+if ((typeof options.authpass !== 'undefined' && typeof options.authuser === 'undefined') || (typeof options.authpass === 'undefined' && typeof options.authuser !== 'undefined')) {
     mainConsoleError('--authpass and --authuser must both be supplied if you want to use basic auth');
     program.help();
 }
