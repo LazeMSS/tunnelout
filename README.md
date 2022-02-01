@@ -1,13 +1,12 @@
-# localtunnel
+# tunnelout
+TunnelOut is a small nodejs appliaction that can expose a locally internal web server to the public web. Its based on https://github.com/localtunnel/localtunnel
 
-localtunnel exposes your localhost to the world for easy testing and sharing! No need to mess with DNS or deploy just to have others test out your changes.
-
-Great for working with browser testing tools like browserling or external api callback services like twilio which require a public url for callbacks.
+TunnelOut makes it easy for you to expose you local rpi website, offer public apis and more.
 
 ## Quickstart
 
 ```
-npx localtunnel --port 8000
+npx tunnelout --port 8000 --host https://servername.com
 ```
 
 ## Installation
@@ -15,36 +14,41 @@ npx localtunnel --port 8000
 ### Globally
 
 ```
-npm install -g localtunnel
+npm install -g tunnelout
 ```
 
 ### As a dependency in your project
 
 ```
-yarn add localtunnel
+npm install tunnelout
 ```
 
 ## CLI usage
 
-When localtunnel is installed globally, just use the `lt` command to start the tunnel.
+When localtunnel is installed globally, just use the `tunout` command to start the tunnel.
 
 ```
-lt --port 8000
+tunout --port 8000 --host https://servername.com
 ```
 
-Thats it! It will connect to the tunnel server, setup the tunnel, and tell you what url to use for your testing. This url will remain active for the duration of your session; so feel free to share it with others for happy fun time!
+Thats it! It will connect to the tunnel server, setup the tunnel, and tell you what url to use for your testing.
+This url will remain active for the duration of your session; so feel free to share it with others for happy fun time!
+You can add the ```--print-request``` to get realtime preview of what files are being served out.
 
-You can restart your local server all you want, `lt` is smart enough to detect this and reconnect once it is back.
+You can restart your local server all you want, `tunout` is smart enough to detect this and reconnect once it is back.
 
-### Arguments
+### Usage
 ```
-  -d, --debug                 output extra debugging (default: false)
-  -p, --port <number>         port number (default: 80, env: PORT)
-  -h, --host <upstreamhost>   Upstream server providing forwarding (env: HOST)
-  -r, --retries <number>      Maxium number of retries before quitting connections, 0 means no limit (default: 0, env: RETRIES)
-  -i, --insecurehost          Use insecure tunnel to connect to the server (default: false, env: INSECUREHOST)
-  -k, --userkey <userkey>     Send then string as user key header to upstream server (env: USERKEY)
-  -s, --subdomain <domain>    Send then string as the requested subdomain on the upstram server (env: SUBDOMAIN)
+Usage: tunout --host <tunnelOutHost> --port <number> [options]
+
+Options:
+  -d, --debug                 output extra debugging (default: false, env: DEBUG)
+  -h, --host <tunnelOutHost>  tunnelOut server providing forwarding - remeber http(s):// (env: HOST)
+  -p, --port <number>         local port number to connect to ie. --local-host port (default: 80, env: PORT)
+  -r, --retries <number>      Maxium number of retries before quitting connections, 0 means no limit (default: 10, env: RETRIES)
+  -i, --insecurehost          Use/force insecure tunnel to connect to the tunnelOut server (default: false, env: INSECUREHOST)
+  -k, --userkey <userkey>     Send then string as user key header to tunnelOut server (env: USERKEY)
+  -s, --subdomain <domain>    Send then string as the requested subdomain on the tunnelOut server (env: SUBDOMAIN)
   -l, --local-host <host>     Tunnel traffic to this host instead of localhost, override Host header to this host (default: "localhost", env: LOCALHOST)
   -q, --quiet                 quiet mode - minimal output to the shell (default: false, env: QUIET)
   -pr, --print-requests       Print basic request info (default: false, env: PRINTREQUESTS)
@@ -58,9 +62,10 @@ You can restart your local server all you want, `lt` is smart enough to detect t
   -V, --version               output the version number
   --help                      display help for command
 ```
-
 You may also specify arguments via env variables. - show in the help as (env: XXX)
+The evn variables can be set on commandline or by using .env file
 
+<!--
 ## API
 
 The localtunnel client is also usable through an API (for test integration, automation, etc)
@@ -122,11 +127,11 @@ Clients in other languages
 _go_ [gotunnelme](https://github.com/NoahShen/gotunnelme)
 
 _go_ [go-localtunnel](https://github.com/localtunnel/go-localtunnel)
-
+*/
 ## server
 
 See [localtunnel/server](//github.com/localtunnel/server) for details on the server that powers localtunnel.
-
+-->
 ## License
 
 MIT
