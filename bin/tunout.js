@@ -27,7 +27,7 @@ function stringIsAValidUrl(s) {
 
 // Quick error output
 function mainConsoleError(str) {
-    console.log('\x1b[1;37m%s\x1b[0m', 'Input error:', '\x1b[0;31m' + str + '\x1b[0m\n');
+    console.error('\x1b[1;37m%s\x1b[0m', 'Input error:', '\x1b[0;31m' + str + '\x1b[0m\n');
 }
 
 // Formating of labels
@@ -122,14 +122,30 @@ if (typeof options.localCert !== typeof options.localKey && (options.localCert =
     program.help();
 }
 
-if (options.localCert !== undefined && !fs.existsSync(options.localCert)) {
-    mainConsoleError('File not found for --local-cert: "' + options.localCert + '"');
-    program.help();
+if (options.localCert !== undefined) {
+    try {
+        fs.accessSync(options.localCert, fs.constants.R_OK);
+    } catch (err) {
+        if (err != undefined && 'code' in err && err.code == 'EACCES') {
+            mainConsoleError('Files access not allowed for --local-cert: "' + options.localCert + '" - maybe run as root?');
+        } else {
+            mainConsoleError('File not found for --local-cert: "' + options.localCert + '"');
+        }
+        program.help();
+    }
 }
 
-if (options.localKey !== undefined && !fs.existsSync(options.localKey)) {
-    mainConsoleError('File not found for --local-cert: "' + options.localKey + '"');
-    program.help();
+if (options.localKey !== undefined) {
+    try {
+        fs.accessSync(options.localKey, fs.constants.R_OK);
+    } catch (err) {
+        if (err != undefined && 'code' in err && err.code == 'EACCES') {
+            mainConsoleError('Files access not allowed for --local-key: "' + options.localCert + '" - maybe run as root?');
+        } else {
+            mainConsoleError('File not found for --local-key: "' + options.localCert + '"');
+        }
+        program.help();
+    }
 }
 
 process.on('SIGINT', function () {
