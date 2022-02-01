@@ -2,11 +2,11 @@
   "name": "tunnelout",
   "description": "Expose a localhost or another host in the local network to the internet - based on https://github.com/localtunnel/localtunnel",
   "version": "0.5",
-  "homepage": "https://github.com/LazeMSS/localtunnel/",
+  "homepage": "https://github.com/LazeMSS/tunnelout/",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git@github.com:LazeMSS/localtunnel.git"
+    "url": "git@github.com:LazeMSS/tunnelout.git"
   },
   "author": "Mikkel Skovgaard <lazedk@gmail.com>",
   "contributors": [
