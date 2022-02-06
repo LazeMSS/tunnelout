@@ -42,25 +42,25 @@ You can restart your local server all you want, `tunout` is smart enough to dete
 Usage: tunout --host <tunnelOutHost> --port <number> [options]
 
 Options:
-  -d, --debug                 output extra debugging (default: false, env: DEBUG)
-  -h, --host <tunnelOutHost>  tunnelOut server providing forwarding - remeber http(s):// (env: HOST)
-  -p, --port <number>         local port number to connect to ie. --local-host port (default: 80, env: PORT)
-  -r, --retries <number>      Maxium number of retries before quitting connections, 0 means no limit (default: 10, env: RETRIES)
-  -i, --insecurehost          Use/force insecure tunnel to connect to the tunnelOut server (default: false, env: INSECUREHOST)
-  -k, --userkey <userkey>     Send then string as user key header to tunnelOut server (env: USERKEY)
-  -s, --subdomain <domain>    Send then string as the requested subdomain on the tunnelOut server (env: SUBDOMAIN)
-  -l, --local-host <host>     Tunnel traffic to this host instead of localhost, override Host header to this host (default: "localhost", env: LOCALHOST)
-  -q, --quiet                 quiet mode - minimal output to the shell (default: false, env: QUIET)
-  -pr, --print-requests       Print basic request info (default: false, env: PRINTREQUESTS)
-  -au, --authuser <username>  Username for basic auth when connecting to the tunnel (env: AUTHUSER)
-  -ap, --authpass <password>  Password for basic auth (env: AUTHPASS)
-  -lh, --local-https          Should we use SSL/HTTPS to connect to the local host (default: false, env: LOCALHTTPS)
-  -pp, --local-cert <path>    Path to certificate PEM file for local HTTPS server (env: LOCALCERT)
-  -pk, --local-key <path>     Path to certificate key file for local HTTPS server (env: LOCALKEY)
-  -pc, --local-ca <path>      Path to certificate authority file for self-signed certificates (env: LOCALCA)
-  -aic, --allow-invalid-cert  Disable certificate checks for your local HTTPS server (ignore loca-cert/-key/-ca options) (default: false, env: ALLOWINVALIDCERT)
-  -V, --version               output the version number
-  --help                      display help for command
+  -d, --debug                  output extra debugging (default: false, env: DEBUG)
+  -h, --host <tunnelOutHost>   tunnelOut server providing forwarding - remember http(s):// (env: HOST)
+  -p, --port <number>          local port number to connect to ie. --local-host:--port (default: 80, env: PORT)
+  -r, --retries <number>       Maxium number of retries before giving up on the connection, 0 means no limit (default: 10, env: RETRIES)
+  -i, --insecurehost           Use/force insecure tunnel when connecting to the tunnelOut server (default: false, env: INSECUREHOST)
+  -k, --clientkey <clientkey>  Send this string as client key header to the tunnelOut server (env: CLIENTKEY)
+  -s, --subdomain <domain>     Send then string as the requested subdomain on the tunnelOut server (env: SUBDOMAIN)
+  -l, --local-host <host>      Tunnel traffic to this host instead of localhost, override Host header to this host (default: "localhost", env: LOCALHOST)
+  -q, --quiet                  quiet mode - minimal output to the shell (default: false, env: QUIET)
+  -pr, --print-requests        Print basic request info (default: false, env: PRINTREQUESTS)
+  -au, --authuser <username>   Username for basic auth when connecting to the tunnel (env: AUTHUSER)
+  -ap, --authpass <password>   Password for basic auth (env: AUTHPASS)
+  -lh, --local-https           Should we use SSL/HTTPS to connect to the local host (default: false, env: LOCALHTTPS)
+  -pp, --local-cert <path>     Path to certificate PEM file for local HTTPS server (env: LOCALCERT)
+  -pk, --local-key <path>      Path to certificate key file for local HTTPS server (env: LOCALKEY)
+  -pc, --local-ca <path>       Path to certificate authority file for self-signed certificates (env: LOCALCA)
+  -aic, --allow-invalid-cert   Disable certificate checks for your local HTTPS server (ignore loca-cert/-key/-ca options) (default: false, env: ALLOWINVALIDCERT)
+  -V, --version                output the version number
+  --help                       display help for command
 ```
 You may also specify arguments via env variables. - show in the help as (env: XXX)
 The evn variables can be set on commandline or by using .env file
