@@ -10,6 +10,7 @@ const { Command, Option } = require('commander');
 const packageInfo = require('../package');
 const tunnelOutMain = require('../tunnelout');
 const fs = require('fs');
+const { EOL } = require('os');
 
 const URL = require('url').URL;
 
@@ -27,7 +28,7 @@ function stringIsAValidUrl(s) {
 
 // Quick error output
 function mainConsoleError(str) {
-    console.error('\x1b[1;37m%s\x1b[0m', 'Input error:', '\x1b[0;31m' + str + '\x1b[0m\n');
+    console.error('\x1b[1;37m%s\x1b[0m', 'Input error:', '\x1b[0;31m' + str + '\x1b[0m' + EOL);
 }
 
 // Formating of labels
@@ -50,7 +51,7 @@ program
     .addOption(new Option('-p, --port <number>', 'local port number to connect to ie. --local-host port').default(80).env('PORT').makeOptionMandatory())
     .addOption(new Option('-r, --retries <number>', 'Maxium number of retries before quitting connections, 0 means no limit').default(10).env('RETRIES'))
     .addOption(new Option('-i, --insecurehost', 'Use/force insecure tunnel to connect to the tunnelOut server').default(false).env('INSECUREHOST'))
-    .addOption(new Option('-k, --userkey <userkey>', 'Send then string as user key header to tunnelOut server').env('USERKEY'))
+    .addOption(new Option('-k, --clientkey <clientkey>', 'Send this string as client key header to the tunnelOut server').env('CLIENTKEY'))
     .addOption(new Option('-s, --subdomain <domain>', 'Send then string as the requested subdomain on the tunnelOut server').env('SUBDOMAIN'))
     .addOption(new Option('-l, --local-host <host>', 'Tunnel traffic to this host instead of localhost, override Host header to this host').default('localhost').env('LOCALHOST'))
     .addOption(new Option('-q, --quiet', 'quiet mode - minimal output to the shell').default(false).env('QUIET'))
@@ -85,41 +86,46 @@ if (!stringIsAValidUrl(options.host)) {
     // Poor mans url validation -- i don't care for too many modules
     if (!stringIsAValidUrl(options.host) || options.host.indexOf('.') == -1) {
         mainConsoleError('Invalid argument: "host" must be a valid URL');
-        program.help();
+        program.help({ error: true });
     }
 }
 
 options.port = Number(options.port);
 if (isNaN(options.port)) {
     mainConsoleError('Invalid argument: "port" must be a number');
-    program.help();
+    program.help({ error: true });
 }
 
 options.retries = Number(options.retries);
 if (isNaN(options.retries) || options.retries < 0) {
     mainConsoleError('Invalid argument: "retries" must be a number');
-    program.help();
+    program.help({ error: true });
 }
 
 // We need both user and pass
 if (typeof options.authpass !== typeof options.authuser && (options.authpass === undefined || options.authuser === undefined)) {
     mainConsoleError('Both --authpass and --authuser must be supplied if you want to use basic auth');
-    program.help();
+    program.help({ error: true });
 }
 if (typeof options.authpass !== 'undefined' && options.authpass === options.authuser) {
     mainConsoleError('--authpass and --authuser parameters must be different!');
-    program.help();
+    program.help({ error: true });
+}
+
+if (options.authpass !== undefined && /^(?=(.*[a-z]){3,})(?=(.*[A-Z]){2,})(?=(.*[0-9]){2,})(?=(.*[!@#$%^&*()\-__+.]){1,}).{8,}$/.test(options.authpass) == false) {
+    mainConsoleError(EOL + 'Insecure --authpass, minimmum is 8 chars long containing at least: 3 lowercaser chars, 2 uppercase chars, 2 numeric chars and one special char(!@#$%^&*()-__+.)');
+    program.help({ error: true });
 }
 
 // Fix missing or bad subdomanin
 if (!/^(?:[a-z0-9][a-z0-9-]{4,63}[a-z0-9]|[a-z0-9]{3,63})$/.test(options.subdomain)) {
     mainConsoleError('Invalid argument: "subdomain". Subdomain must be lowercase and between 4 and 63 alphanumeric characters.');
-    program.help();
+    program.help({ error: true });
 }
 
 if (typeof options.localCert !== typeof options.localKey && (options.localCert === undefined || options.localKey === undefined)) {
     mainConsoleError('Both --local-cert and --local-key must be supplied if you want to use local encryption');
-    program.help();
+    program.help({ error: true });
 }
 
 if (options.localCert !== undefined) {
@@ -131,7 +137,7 @@ if (options.localCert !== undefined) {
         } else {
             mainConsoleError('File not found for --local-cert: "' + options.localCert + '"');
         }
-        program.help();
+        program.help({ error: true });
     }
 }
 
@@ -144,7 +150,7 @@ if (options.localKey !== undefined) {
         } else {
             mainConsoleError('File not found for --local-key: "' + options.localCert + '"');
         }
-        program.help();
+        program.help({ error: true });
     }
 }
 
@@ -161,7 +167,7 @@ process.on('SIGINT', function () {
         port: options.port,
         host: options.host,
         subdomain: options.subdomain,
-        userkey: options.userkey,
+        clientkey: options.clientkey,
         authuser: options.authuser,
         authpass: options.authpass,
         local_host: options.localHost,
