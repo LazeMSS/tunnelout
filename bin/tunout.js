@@ -106,7 +106,7 @@ Object.entries(process.env).forEach(function ([key, value]) {
                 program.help({ error: true });
             }
         }
-        if (value === '') {
+        if (value === '' && program.getOptionValueSource(optKey) == 'env') {
             options[optKey] = undefined;
         }
     }
@@ -117,7 +117,7 @@ Object.entries(options).forEach(function ([key, value]) {
     debug(' %s: %s (%s)', key, value, program.getOptionValueSource(key));
 });
 
-const debugMode = (process.env['DEBUG'] != undefined && process.env['DEBUG'] != "");
+const debugMode = process.env['DEBUG'] != undefined && process.env['DEBUG'] != '';
 const quietMode = options.quiet;
 
 // check host
@@ -167,6 +167,11 @@ if (!/^(?:[a-z0-9][a-z0-9-]{4,63}[a-z0-9]|[a-z0-9]{3,63})$/.test(options.subdoma
     program.help({ error: true });
 }
 
+if (options.localHttps == true && (options.localCert == undefined || options.localKey == undefined)) {
+    mainConsoleError('To run the client with local https you must provide --local-cert and --local-key files.');
+    program.help({ error: true });
+}
+
 if (typeof options.localCert !== typeof options.localKey && (options.localCert === undefined || options.localKey === undefined)) {
     mainConsoleError('Both --local-cert and --local-key must be supplied if you want to use local encryption');
     program.help({ error: true });
@@ -198,6 +203,18 @@ if (options.localKey !== undefined) {
     }
 }
 
+if (options.local_ca !== undefined) {
+    try {
+        fs.accessSync(options.local_ca, fs.constants.R_OK);
+    } catch (err) {
+        if (err != undefined && 'code' in err && err.code == 'EACCES') {
+            mainConsoleError('Files access not allowed for --local-ca: "' + options.local_ca + '" - maybe run as root?');
+        } else {
+            mainConsoleError('File not found for --local-ca: "' + options.local_ca + '"');
+        }
+        program.help({ error: true });
+    }
+}
 
 if (options.agentname == undefined) {
     options.agentname = packageInfo.name + '/' + packageInfo.version;
@@ -274,7 +291,7 @@ process.on('SIGINT', function () {
 
     // Should we show the requests
     if (options.printRequests) {
-        if (!debugMode){
+        if (!debugMode) {
             outputThis('\x1B[8;0H Last 20 requests...');
         }
         tunnelClient.on('request', (info) => {
@@ -285,7 +302,7 @@ process.on('SIGINT', function () {
             lastRequests = lastRequests.slice(0, 20);
 
             // Reset position
-            if (!debugMode){
+            if (!debugMode) {
                 outputThis('\x1B[8;0H');
             }
             lastRequests.forEach((element) => outputThis('  ' + element + '\x1B[K'));
