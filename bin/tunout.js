@@ -203,14 +203,14 @@ if (options.localKey !== undefined) {
     }
 }
 
-if (options.local_ca !== undefined) {
+if (options.localCa !== undefined) {
     try {
-        fs.accessSync(options.local_ca, fs.constants.R_OK);
+        fs.accessSync(options.localCa, fs.constants.R_OK);
     } catch (err) {
         if (err != undefined && 'code' in err && err.code == 'EACCES') {
-            mainConsoleError('Files access not allowed for --local-ca: "' + options.local_ca + '" - maybe run as root?');
+            mainConsoleError('Files access not allowed for --local-ca: "' + options.localCa + '" - maybe run as root?');
         } else {
-            mainConsoleError('File not found for --local-ca: "' + options.local_ca + '"');
+            mainConsoleError('File not found for --local-ca: "' + options.localCa + '"');
         }
         program.help({ error: true });
     }
