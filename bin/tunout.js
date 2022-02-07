@@ -9,6 +9,7 @@ const { Command, Option } = require('commander');
 // Get version info for commandline version
 const packageInfo = require('../package');
 const tunnelOutMain = require('../tunnelout');
+const debug = require('debug')('tunnelout:tunout.js');
 const fs = require('fs');
 const { EOL } = require('os');
 
@@ -38,43 +39,86 @@ function formatLabel(label) {
 
 // Output stuff unless in debug or quiet
 function outputThis(...theArgs) {
-    if (debugMode || quietMode) {
+    if (quietMode) {
         return;
     }
     console.log.apply(console, theArgs);
 }
 
+function envToParam(envStr) {
+    let optKey = envStr.substring(3).toLowerCase();
+    optKey = optKey.replace(/(_([a-z])(?!\s))/g, function (match, p1, p2) {
+        return p2.toUpperCase();
+    });
+    return optKey;
+}
+
 program
     .usage('--host <tunnelOutHost> --port <number> [options]')
-    .addOption(new Option('-d, --debug', 'output extra debugging').default(false).env('DEBUG'))
-    .addOption(new Option('-h, --host <tunnelOutHost>', 'tunnelOut server providing forwarding - remember http(s)://').env('HOST').makeOptionMandatory())
-    .addOption(new Option('-p, --port <number>', 'local port number to connect to ie. --local-host:--port').default(80).env('PORT').makeOptionMandatory())
-    .addOption(new Option('-r, --retries <number>', 'Maxium number of retries before giving up on the connection, 0 means no limit').default(10).env('RETRIES'))
-    .addOption(new Option('-i, --insecurehost', 'Use/force insecure tunnel when connecting to the tunnelOut server').default(false).env('INSECUREHOST'))
-    .addOption(new Option('-k, --clientkey <clientkey>', 'Send this string as x-client-key header to the tunnelOut server').env('CLIENTKEY'))
-    .addOption(new Option('-s, --subdomain <domain>', 'Send this string as the requested subdomain on the tunnelOut server').env('SUBDOMAIN'))
-    .addOption(new Option('-l, --local-host <host>', 'Tunnel traffic to this host instead of localhost, overrides Host header to the specified host').default('localhost').env('LOCALHOST'))
-    .addOption(new Option('-q, --quiet', 'quiet mode - minimal output to the shell').default(false).env('QUIET'))
-    .addOption(new Option('-pr, --print-requests', 'Print basic request info when they arrive').default(false).env('PRINTREQUESTS'))
-    .addOption(new Option('-au, --authuser <username>', 'Username for basic auth for the webservice/tunnel').env('AUTHUSER'))
-    .addOption(new Option('-ap, --authpass <password>', 'Password for basic auth for the webservice/tunnel').env('AUTHPASS'))
-    .addOption(new Option('-lh, --local-https', 'Should we use SSL/HTTPS to connect to the local host').default(false).env('LOCALHTTPS'))
-    .addOption(new Option('-pp, --local-cert <path>', 'Path to certificate PEM file for local HTTPS server').env('LOCALCERT'))
-    .addOption(new Option('-pk, --local-key <path>', 'Path to certificate key file for local HTTPS server').env('LOCALKEY'))
-    .addOption(new Option('-pc, --local-ca <path>', 'Path to certificate authority file for self-signed certificates').env('LOCALCA'))
-    .addOption(new Option('-aic, --allow-invalid-cert', 'Disable certificate checks for your local HTTPS server (ignore loca-cert/-key/-ca options)').default(false).env('ALLOWINVALIDCERT'))
+    .addOption(new Option('-h, --host <tunnelOutHost>', 'tunnelOut server providing forwarding - remember http(s)://').env('TO_HOST').makeOptionMandatory())
+    .addOption(new Option('-p, --port <number>', 'local port number to connect to ie. --local-host:--port').default(80).env('TO_PORT').makeOptionMandatory())
+    .addOption(new Option('-r, --retries <number>', 'Maxium number of retries before giving up on the connection, 0 means no limit').default(10).env('TO_RETRIES'))
+    .addOption(new Option('-i, --insecurehost', 'Use/force insecure tunnel when connecting to the tunnelOut server').default(false).env('TO_INSECUREHOST'))
+    .addOption(new Option('-k, --clientkey <clientkey>', 'Send this string as x-client-key header to the tunnelOut server - only change this if you know what you are doing!').env('TO_CLIENTKEY'))
+    .addOption(new Option('-a, --agentname <agentname>', 'Send this string as user-agent header to the tunnelOut server').env('TO_AGENTNAME'))
+    .addOption(new Option('-s, --subdomain <domain>', 'Send this string as the requested subdomain on the tunnelOut server').env('TO_SUBDOMAIN'))
+    .addOption(new Option('-l, --local-host <host>', 'Tunnel traffic to this host instead of localhost, overrides Host header to the specified host').default('localhost').env('TO_LOCAL_HOST'))
+    .addOption(new Option('-q, --quiet', 'quiet mode - minimal output to the shell').default(false).env('TO_QUIET'))
+    .addOption(new Option('-pr, --print-requests', 'Print basic request info when they arrive').default(false).env('TO_PRINT_REQUESTS'))
+    .addOption(new Option('-au, --authuser <username>', 'Username for basic auth for the webservice/tunnel').env('TO_AUTHUSER'))
+    .addOption(new Option('-ap, --authpass <password>', 'Password for basic auth for the webservice/tunnel').env('TO_AUTHPASS'))
+    .addOption(new Option('-lh, --local-https', 'Should we use SSL/HTTPS to connect to the local host').default(false).env('TO_LOCAL_HTTPS'))
+    .addOption(new Option('-pp, --local-cert <path>', 'Path to certificate PEM file for local HTTPS server').env('TO_LOCAL_CERT'))
+    .addOption(new Option('-pk, --local-key <path>', 'Path to certificate key file for local HTTPS server').env('TO_LOCAL_KEY'))
+    .addOption(new Option('-pc, --local-ca <path>', 'Path to certificate authority file for self-signed certificates').env('TO_LOCAL_CA'))
+    .addOption(new Option('-aic, --allow-invalid-cert', 'Disable certificate checks for your local HTTPS server (ignore loca-cert/-key/-ca options)').default(false).env('TO_ALLOW_INVALID_CERT'))
     .version(packageInfo.version);
 
 program.parse(process.argv);
 const options = program.opts();
 
-// Check for debug mode
-const debugMode = options.debug;
+// INPUT VALIDATION START ------------------------------------------------------------------------------------------------------
+// filter boolean values from env and check it all
+Object.entries(process.env).forEach(function ([key, value]) {
+    if (key.indexOf('TO_') == 0) {
+        let optKey = envToParam(key);
+        // Is the env value boolean - commander set its to true if anything is entered in evn and the argument is not a string
+        if (typeof options[optKey] == 'boolean' && program.getOptionValueSource(optKey) == 'env') {
+            let envBoolFail = true;
+            let valLow = value.toLowerCase();
+            // Do we have a string "boolean" false the convert to real false
+            if (valLow == 'false' || value == 0) {
+                if (options[optKey] != undefined) {
+                    // Assign real boolean value
+                    options[optKey] = false;
+                    envBoolFail = false;
+                }
+            }
+            if (valLow == 'true' || value == 1) {
+                if (options[optKey] != undefined) {
+                    // Assign real boolean value
+                    options[optKey] = true;
+                    envBoolFail = false;
+                }
+            }
+            if (envBoolFail) {
+                mainConsoleError('Invalid ENV argument for ' + key + ' value "' + value + '" is not a boolean value');
+                program.help({ error: true });
+            }
+        }
+        if (value === '') {
+            options[optKey] = undefined;
+        }
+    }
+});
+
+debug('Client started with the following options. Format = argument : value (source for value)');
+Object.entries(options).forEach(function ([key, value]) {
+    debug(' %s: %s (%s)', key, value, program.getOptionValueSource(key));
+});
+
+const debugMode = (process.env['DEBUG'] != undefined && process.env['DEBUG'] != "");
 const quietMode = options.quiet;
-if (debugMode) {
-    console.log('Commandline options:');
-    console.log(options);
-}
 
 // check host
 if (!stringIsAValidUrl(options.host)) {
@@ -154,8 +198,13 @@ if (options.localKey !== undefined) {
     }
 }
 
+
+if (options.agentname == undefined) {
+    options.agentname = packageInfo.name + '/' + packageInfo.version;
+}
+
 process.on('SIGINT', function () {
-    if (!debugMode && !quietMode) {
+    if (!quietMode) {
         outputThis('\x1b[2J\x1b[0;0HInterrupted (SIGINT)');
     }
     process.exit();
@@ -179,7 +228,7 @@ process.on('SIGINT', function () {
         local_ca: options.localCa,
         allow_invalid_cert: options.allowInvalidCert,
         emitrequests: options.printRequests,
-        client_name: packageInfo.name + '/' + packageInfo.version
+        agentname: options.agentname
     }).catch((err) => {
         throw err;
     });
@@ -188,7 +237,7 @@ process.on('SIGINT', function () {
         throw err;
     });
 
-    if (quietMode) {
+    if (quietMode || debugMode) {
         console.log('tunnelOut running: %s -> %s:%s \x1b[0m', tunnelClient.url, options.localHost, options.port);
     } else {
         // Clear screen
@@ -225,7 +274,9 @@ process.on('SIGINT', function () {
 
     // Should we show the requests
     if (options.printRequests) {
-        outputThis('\x1B[8;0H Last 20 requests...');
+        if (!debugMode){
+            outputThis('\x1B[8;0H Last 20 requests...');
+        }
         tunnelClient.on('request', (info) => {
             let timestr = new Date().toString();
             timestr = timestr.substr(0, timestr.indexOf('(')).trim();
@@ -234,7 +285,9 @@ process.on('SIGINT', function () {
             lastRequests = lastRequests.slice(0, 20);
 
             // Reset position
-            outputThis('\x1B[8;0H');
+            if (!debugMode){
+                outputThis('\x1B[8;0H');
+            }
             lastRequests.forEach((element) => outputThis('  ' + element + '\x1B[K'));
         });
     }
