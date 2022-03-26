@@ -62,7 +62,8 @@ program
     .addOption(new Option('-k, --clientkey <clientkey>', 'Send this string as x-client-key header to the tunnelOut server').env('TO_CLIENTKEY'))
     .addOption(new Option('-a, --agentname <agentname>', 'Send this string as user-agent header to the tunnelOut server - only change this if you know what you are doing!').env('TO_AGENTNAME'))
     .addOption(new Option('-s, --subdomain <domain>', 'Send this string as the requested subdomain on the tunnelOut server').env('TO_SUBDOMAIN'))
-    .addOption(new Option('-l, --local-host <host>', 'Tunnel traffic to this host instead of localhost, overrides Host header to the specified host').default('localhost').env('TO_LOCAL_HOST'))
+    .addOption(new Option('-l, --local-host <host>', 'Tunnel traffic to this host instead of localhost').default('localhost').env('TO_LOCAL_HOST'))
+    .addOption(new Option('-o, --overwrite-header', 'Overrides Host header to the specified host in --localhost').default(false).env('TO_OVERWRITE_HEADER'))
     .addOption(new Option('-q, --quiet', 'quiet mode - minimal output to the shell').default(false).env('TO_QUIET'))
     .addOption(new Option('-pr, --print-requests', 'Print basic request info when they arrive').default(false).env('TO_PRINT_REQUESTS'))
     .addOption(new Option('-au, --authuser <username>', 'Username for basic auth for the webservice/tunnel').env('TO_AUTHUSER'))
@@ -237,6 +238,7 @@ process.on('SIGINT', function () {
         authuser: options.authuser,
         authpass: options.authpass,
         local_host: options.localHost,
+        overwrite_header: options.overwriteHeader,
         retries: options.retries,
         insecurehost: options.insecurehost,
         local_https: options.localHttps,
@@ -264,17 +266,6 @@ process.on('SIGINT', function () {
         outputThis('\x1b[1m\x1b[32mTunnelOut is now running...\x1b[0m');
         outputThis(formatLabel('Forwarding') + '%s -> %s:%s \x1b[0m', tunnelClient.url, options.localHost, options.port);
 
-        /**
-         * cachedUrl is set when using a proxy server that support resource caching.
-         * This URL generally remains available after the tunnel itself has closed.
-         * @see https://github.com/localtunnel/localtunnel/pull/319#discussion_r319846289
-         */
-        if (tunnelClient.cachedUrl) {
-            outputThis(formatLabel('Cached URL') + '%s', tunnelClient.cachedUrl);
-        } else {
-            outputThis(formatLabel('Cached URL') + 'Not used');
-        }
-
         if (tunnelClient.dashboard !== false) {
             outputThis(formatLabel('Dashboard') + '%s', tunnelClient.dashboard);
         } else {
@@ -282,17 +273,17 @@ process.on('SIGINT', function () {
         }
 
         tunnelClient.on('tunnelopen', (count) => {
-            outputThis('\x1B[6;0H' + formatLabel('Tunnels open') + '%s', count);
+            outputThis('\x1B[5;0H' + formatLabel('Tunnels open') + '%s', count);
         });
         tunnelClient.on('tunneldead', (count) => {
-            outputThis('\x1B[6;0H' + formatLabel('Tunnels open') + '%s', count);
+            outputThis('\x1B[5;0H' + formatLabel('Tunnels open') + '%s', count);
         });
     }
 
     // Should we show the requests
     if (options.printRequests) {
         if (!debugMode) {
-            outputThis('\x1B[8;0H Last 20 requests...');
+            outputThis('\x1B[7;0H Last 20 requests...');
         }
         tunnelClient.on('request', (info) => {
             let timestr = new Date().toString();
@@ -303,7 +294,7 @@ process.on('SIGINT', function () {
 
             // Reset position
             if (!debugMode) {
-                outputThis('\x1B[8;0H');
+                outputThis('\x1B[7;0H');
             }
             lastRequests.forEach((element) => outputThis('  ' + element + '\x1B[K'));
         });
