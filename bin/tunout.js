@@ -73,6 +73,7 @@ program
     .addOption(new Option('-pk, --local-key <path>', 'Path to certificate key file for local HTTPS server').env('TO_LOCAL_KEY'))
     .addOption(new Option('-pc, --local-ca <path>', 'Path to certificate authority file for self-signed certificates').env('TO_LOCAL_CA'))
     .addOption(new Option('-aic, --allow-invalid-cert', 'Disable certificate checks for your local HTTPS server (ignore loca-cert/-key/-ca options)').default(false).env('TO_ALLOW_INVALID_CERT'))
+    .addOption(new Option('-js, --output-to-json <file>', 'When connected succesfull then save the connection info to this file').default(false).env('TO_OUTPUT_JSON'))
     .version(packageInfo.version);
 
 program.parse(process.argv);
@@ -221,6 +222,10 @@ if (options.agentname == undefined) {
     options.agentname = packageInfo.name + '/' + packageInfo.version;
 }
 
+if (options.outputToJson !== false && options.outputToJson !== undefined && fs.existsSync(options.outputToJson)){
+    fs.unlink(options.outputToJson, (err => {}));
+}
+
 process.on('SIGINT', function () {
     if (!quietMode) {
         outputThis('\x1b[2J\x1b[0;0HInterrupted (SIGINT)');
@@ -253,8 +258,16 @@ process.on('SIGINT', function () {
     });
 
     tunnelClient.on('error', (err) => {
+        if (options.outputToJson !== false && options.outputToJson !== undefined && fs.existsSync(options.outputToJson)){
+            fs.unlink(options.outputToJson, (err => {}));
+        }
         throw err;
     });
+
+    const resultData = {
+        'dashboard' : tunnelClient.dashboard,
+        'url' : tunnelClient.url
+    };
 
     if (quietMode || debugMode) {
         console.log('tunnelOut running: %s -> %s:%s \x1b[0m', tunnelClient.url, options.localHost, options.port);
@@ -279,6 +292,13 @@ process.on('SIGINT', function () {
             outputThis('\x1B[5;0H' + formatLabel('Tunnels open') + '%s', count);
         });
     }
+
+    if (options.outputToJson !== false && options.outputToJson !== undefined){
+        fs.writeFile(options.outputToJson, JSON.stringify(resultData), (err) => {
+            if (err) throw err;
+        });
+    }
+
 
     // Should we show the requests
     if (options.printRequests) {
