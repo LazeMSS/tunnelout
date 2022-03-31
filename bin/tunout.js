@@ -53,6 +53,20 @@ function envToParam(envStr) {
     return optKey;
 }
 
+function cleanupHandler(exit) {
+    // Delete the ouput file if exit
+    if (options.outputToJson !== false && options.outputToJson !== undefined && fs.existsSync(options.outputToJson)) {
+        fs.unlink(options.outputToJson, (err) => {});
+    }
+
+    if (exit) {
+        if (!quietMode) {
+            outputThis('\x1b[2J\x1b[0;0HInterrupted (SIGINT)');
+        }
+        process.exit();
+    }
+}
+
 program
     .usage('--host <tunnelOutHost> --port <number> [options]')
     .addOption(new Option('-h, --host <tunnelOutHost>', 'tunnelOut server providing forwarding - remember http(s)://').env('TO_HOST').makeOptionMandatory())
@@ -222,15 +236,24 @@ if (options.agentname == undefined) {
     options.agentname = packageInfo.name + '/' + packageInfo.version;
 }
 
-if (options.outputToJson !== false && options.outputToJson !== undefined && fs.existsSync(options.outputToJson)){
-    fs.unlink(options.outputToJson, (err => {}));
-}
+// Cleanup when starting
+cleanupHandler(false);
 
+// Exit handlers
 process.on('SIGINT', function () {
-    if (!quietMode) {
-        outputThis('\x1b[2J\x1b[0;0HInterrupted (SIGINT)');
-    }
-    process.exit();
+    cleanupHandler(true);
+});
+process.on('SIGUSR1', function () {
+    cleanupHandler(true);
+});
+process.on('SIGUSR2', function () {
+    cleanupHandler(true);
+});
+process.on('uncaughtException', function () {
+    cleanupHandler(true);
+});
+process.on('exit', function () {
+    cleanupHandler(false);
 });
 
 (async () => {
@@ -258,15 +281,13 @@ process.on('SIGINT', function () {
     });
 
     tunnelClient.on('error', (err) => {
-        if (options.outputToJson !== false && options.outputToJson !== undefined && fs.existsSync(options.outputToJson)){
-            fs.unlink(options.outputToJson, (err => {}));
-        }
+        cleanupHandler(true);
         throw err;
     });
 
     const resultData = {
-        'dashboard' : tunnelClient.dashboard,
-        'url' : tunnelClient.url
+        dashboard: tunnelClient.dashboard,
+        url: tunnelClient.url
     };
 
     if (quietMode || debugMode) {
@@ -293,12 +314,11 @@ process.on('SIGINT', function () {
         });
     }
 
-    if (options.outputToJson !== false && options.outputToJson !== undefined){
+    if (options.outputToJson !== false && options.outputToJson !== undefined) {
         fs.writeFile(options.outputToJson, JSON.stringify(resultData), (err) => {
             if (err) throw err;
         });
     }
-
 
     // Should we show the requests
     if (options.printRequests) {
