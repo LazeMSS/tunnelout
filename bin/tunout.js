@@ -243,6 +243,9 @@ cleanupHandler(false);
 process.on('SIGINT', function () {
     cleanupHandler(true);
 });
+process.on('SIGTERM', function () {
+    cleanupHandler(true);
+});
 process.on('SIGUSR1', function () {
     cleanupHandler(true);
 });
