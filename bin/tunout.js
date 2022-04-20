@@ -269,7 +269,7 @@ process.on('exit', function (code) {
 
     tunnelClient.on('error', (err) => {
         console.error(err);
-        cleanupHandler(true, 120);
+        cleanupHandler(true, 100);
     });
 
     const resultData = {
@@ -305,7 +305,7 @@ process.on('exit', function (code) {
         fs.writeFile(options.outputToJson, JSON.stringify(resultData), (err) => {
             if (err) {
                 console.error(err);
-                cleanupHandler(true, 129);
+                cleanupHandler(true, 1);
             }
         });
     }
