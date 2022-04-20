@@ -113,7 +113,7 @@
   "resolved" "https://registry.npmjs.org/color-name/-/color-name-1.1.4.tgz"
   "version" "1.1.4"
 
-"commander@^9.0.0":
+"commander@^9.2.0":
   "integrity" "sha512-e2i4wANQiSXgnrBlIatyHtP1odfUp0BbV5Y5nEGbxtIrStkEOAAzCUirvLBNXHLr7kwLvJl6V+4V3XV9x7Wd9w=="
   "resolved" "https://registry.npmjs.org/commander/-/commander-9.2.0.tgz"
   "version" "9.2.0"

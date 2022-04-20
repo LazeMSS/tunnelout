@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "axios": "^0.26.1",
-    "commander": "^9.0.0",
+    "commander": "^9.2.0",
     "debug": "^4.3.4",
     "localenv": "^0.2.2"
   },
