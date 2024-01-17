@@ -19,8 +19,8 @@
     "to": "./bin/tunout.js"
   },
   "dependencies": {
-    "axios": "^0.26.1",
-    "commander": "^9.2.0",
+    "axios": "^1.6.5",
+    "commander": "^11.1.0",
     "debug": "^4.3.4",
     "localenv": "^0.2.2"
   },
@@ -28,10 +28,10 @@
     "node": ">=8.3.0"
   },
   "devDependencies": {
-    "eslint": "^8.13.0",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-prettier": "^4.0.0",
-    "prettier": "^2.6.2"
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "prettier": "^3.2.4"
   },
   "scripts": {
     "pr:check": "prettier --check --ignore-unknown .",

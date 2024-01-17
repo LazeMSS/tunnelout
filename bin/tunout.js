@@ -58,6 +58,10 @@ function cleanupHandler(exit, code) {
         if (!quietMode) {
             outputThis('\x1b[2J\x1b[0;0HInterrupted (' + code + ')');
         }
+
+	if (!Number.isInteger(code)){
+		code=0;
+	}
         process.exit(code);
     }
 }
@@ -226,19 +230,19 @@ if (options.agentname == undefined) {
 cleanupHandler(false, 0);
 
 // Exit handlers
-process.on('SIGINT', function (code) {
+process.on('SIGINT', (code) => {
     cleanupHandler(true, code);
 });
-process.on('SIGTERM', function (code) {
+process.on('SIGTERM', (code) => {
     cleanupHandler(true, code);
 });
-process.on('SIGUSR1', function (code) {
+process.on('SIGUSR1', (code) => {
     cleanupHandler(true, code);
 });
-process.on('SIGUSR2', function (code) {
+process.on('SIGUSR2', (code) => {
     cleanupHandler(true, code);
 });
-process.on('exit', function (code) {
+process.on('exit', (code) => {
     cleanupHandler(false, code);
 });
 
