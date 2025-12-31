@@ -37,7 +37,7 @@ function outputThis(...theArgs) {
     if (quietMode) {
         return;
     }
-    console.log.apply(console, theArgs);
+    console.log(...theArgs);
 }
 
 function envToParam(envStr) {
@@ -48,10 +48,25 @@ function envToParam(envStr) {
     return optKey;
 }
 
+function checkFileAccess(path, argName) {
+    if (path === undefined) return;
+    try {
+        fs.accessSync(path, fs.constants.R_OK);
+    } catch (err) {
+        if (err != undefined && 'code' in err && err.code == 'EACCES') {
+            program.error('Files access not allowed for ' + argName + ': "' + path + '" - maybe run as root?');
+        } else {
+            program.error('File not found for ' + argName + ': "' + path + '"');
+        }
+    }
+}
+
 function cleanupHandler(exit, code) {
     // Delete the ouput file if exit
     if (options.outputToJson !== false && options.outputToJson !== undefined && fs.existsSync(options.outputToJson)) {
-        fs.unlink(options.outputToJson, (err) => {});
+        try {
+            fs.unlinkSync(options.outputToJson);
+        } catch (e) {}
     }
 
     if (exit) {
@@ -186,41 +201,9 @@ if (typeof options.localCert !== typeof options.localKey && (options.localCert =
     program.error('Both --local-cert and --local-key must be supplied if you want to use local encryption');
 }
 
-if (options.localCert !== undefined) {
-    try {
-        fs.accessSync(options.localCert, fs.constants.R_OK);
-    } catch (err) {
-        if (err != undefined && 'code' in err && err.code == 'EACCES') {
-            program.error('Files access not allowed for --local-cert: "' + options.localCert + '" - maybe run as root?');
-        } else {
-            program.error('File not found for --local-cert: "' + options.localCert + '"');
-        }
-    }
-}
-
-if (options.localKey !== undefined) {
-    try {
-        fs.accessSync(options.localKey, fs.constants.R_OK);
-    } catch (err) {
-        if (err != undefined && 'code' in err && err.code == 'EACCES') {
-            program.error('Files access not allowed for --local-key: "' + options.localCert + '" - maybe run as root?');
-        } else {
-            program.error('File not found for --local-key: "' + options.localCert + '"');
-        }
-    }
-}
-
-if (options.localCa !== undefined) {
-    try {
-        fs.accessSync(options.localCa, fs.constants.R_OK);
-    } catch (err) {
-        if (err != undefined && 'code' in err && err.code == 'EACCES') {
-            program.error('Files access not allowed for --local-ca: "' + options.localCa + '" - maybe run as root?');
-        } else {
-            program.error('File not found for --local-ca: "' + options.localCa + '"');
-        }
-    }
-}
+checkFileAccess(options.localCert, '--local-cert');
+checkFileAccess(options.localKey, '--local-key');
+checkFileAccess(options.localCa, '--local-ca');
 
 if (options.agentname == undefined) {
     options.agentname = packageInfo.name + '/' + packageInfo.version;
